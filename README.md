@@ -310,14 +310,26 @@ Ableton: [Track appears]
 
 ---
 
-## Next Steps
+## Current Status
 
-1. **🎬 SET UP RECORDING** for Prototype Hour #02
-2. Enable OSC in Ableton or install LiveOSC
-3. Build basic MCP server (Phase 1)
-4. Test create_track and add_notes
-5. Generate first chord progression
-6. Record and publish episode
+**Phase 1: Foundation ✅ Complete**
+- OSC communication working
+- Music theory engine implemented
+- 12 CLI commands functional
+- Chord progressions, melodies, drums working
+
+**Phase 2: Making It a True Agent 🚧 Planned**
+See **PHASE-2-PLAN.md** for detailed roadmap.
+
+**What's Next:**
+1. Implement working MCP server (wrap CLI functions as tools)
+2. Add context awareness (let Claude see project state)
+3. Connect to Claude Code
+4. Test natural language control: "create a lo-fi beat in D minor"
+
+**The Difference:**
+- **Now (CLI):** `python3 ableton.py chord-progression C`
+- **Phase 2 (Agent):** Tell Claude "create a chill beat" and it decides + executes
 
 ---
 

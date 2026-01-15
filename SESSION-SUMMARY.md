@@ -225,25 +225,49 @@ Found 9 tracks
 
 ---
 
+## What We Actually Built
+
+### Is This an Agent? 🤔
+
+**No - it's the foundation for an agent.**
+
+**What we built:**
+- ✅ CLI tool with fixed commands
+- ✅ Algorithmic music generation (deterministic)
+- ✅ OSC communication layer
+- ✅ Music theory engine
+- ❌ No AI decision-making
+- ❌ No natural language understanding
+
+**What a true agent needs:**
+- Claude Code integration
+- Natural language → tool mapping
+- Context awareness (read Ableton state)
+- Intelligent musical decisions
+
+**See PHASE-2-PLAN.md for the roadmap to make it a true agent.**
+
+---
+
 ## Next Steps (Phase 2)
 
-### High Priority
+**Goal:** Make Claude Code control Ableton via natural language (1-2 hours)
+
+### Critical Path
+1. **Implement working MCP server** - Expose all CLI functions as MCP tools
+2. **Add context awareness** - Tools to read Ableton state
+3. **Connect to Claude Code** - Update config, restart, test
+4. **Test natural language** - "create a lo-fi beat in D minor"
+
+### After Agent Works
 - [ ] Clip triggering (fire specific clips)
 - [ ] Auto-load instruments (Operator by default)
 - [ ] Kick and snare patterns
 - [ ] Bassline generator (follows chord root notes)
-
-### Medium Priority
-- [ ] Melody quantization options
 - [ ] More drum patterns (boom-bap, four-on-floor, trap)
-- [ ] Arpeggiator
 - [ ] Device parameter control (filter cutoff, reverb, etc.)
 
-### Low Priority
-- [ ] Full MCP integration (use from Claude Code)
-- [ ] Sample browser control
-- [ ] Arrangement view manipulation
-- [ ] Audio clip warping
+**Full details in PHASE-2-PLAN.md**
 
 ---
 
