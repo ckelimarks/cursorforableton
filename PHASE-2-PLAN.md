@@ -6,11 +6,134 @@
 
 ---
 
+## Understanding What an Agent Actually Is
+
+### The Agentic Loop
+
+An agent is not magic - it's a simple loop:
+
+```python
+# What an agent actually is:
+while True:
+    user_input = get_input()
+    response = llm.complete(user_input)
+    if response.wants_tool:
+        result = execute_tool(response.tool_call)
+        response = llm.complete(result)
+    print(response)
+```
+
+**Key components:**
+1. **LLM reasoning** - `llm.complete(user_input)` - understands intent
+2. **Tool calling** - `execute_tool(response.tool_call)` - takes action
+3. **Loop** - `while True` - can chain multiple tools
+4. **Reflection** - `llm.complete(result)` - sees results, decides next step
+
+**Without the loop, it's just a tool.**
+
+---
+
+### Current State: Not an Agent
+
+```python
+# What we have now (CLI - no agent)
+user_input = "chord-progression C"
+result = execute_tool("chord_progression", {"key": "C"})
+print(result)
+```
+
+**Missing:**
+- ❌ No LLM reasoning
+- ❌ No decision-making
+- ❌ No loop/chaining
+- ❌ No natural language understanding
+
+**It's a direct command → tool execution. No intelligence.**
+
+---
+
+### Target State: True Agent
+
+```python
+# What Phase 2 adds (Agentic loop)
+user_input = "create a lo-fi beat in D minor"
+
+# Claude thinks
+response = claude.complete(user_input)
+# → "I'll create a lo-fi beat. First, set tempo to 85 BPM"
+
+# Claude calls tool #1
+if response.wants_tool:  # wants set_tempo
+    result = execute_tool(response.tool_call)  # set_tempo(85)
+
+    # Claude reflects on result
+    response = claude.complete(result)
+    # → "Good. Now create a D minor chord progression"
+
+    # Claude calls tool #2
+    if response.wants_tool:  # wants chord_progression
+        result = execute_tool(response.tool_call)  # chord_progression("D", "pop", "minor", 4)
+
+        # Claude reflects again
+        response = claude.complete(result)
+        # → "Now add a melody"
+
+        # Claude calls tool #3
+        if response.wants_tool:  # wants phi_melody
+            result = execute_tool(response.tool_call)  # phi_melody("D", "minor", 4, 8)
+            response = claude.complete(result)
+
+# Claude responds with context
+print(response)
+# → "Created a lo-fi beat in D minor with chord progression, melody, and 85 BPM tempo"
+```
+
+**This is an agent:**
+- ✅ LLM decides what tools to use
+- ✅ Chains multiple tools together
+- ✅ Reflects on results
+- ✅ Understands natural language
+- ✅ Provides context-aware responses
+
+---
+
+### How MCP Implements This For Us
+
+**MCP is the framework that runs the agentic loop:**
+
+```python
+# We write tools
+@server.tool()
+def chord_progression(key: str, progression: str = "pop", ...):
+    """Generate chord progression in Ableton"""
+    return result
+
+# MCP automatically:
+# 1. Runs the while True loop
+# 2. Exposes tools to Claude
+# 3. Lets Claude decide when to call tools
+# 4. Executes tools when Claude requests
+# 5. Passes results back to Claude for reflection
+# 6. Handles multi-step tool chaining
+```
+
+**We don't write the loop - MCP does it.**
+
+Our job in Phase 2:
+1. Wrap our CLI functions as MCP tools
+2. Write good tool descriptions (Claude reads these to decide)
+3. Add context tools (let Claude see Ableton state)
+4. Connect to Claude Code
+
+MCP handles the rest.
+
+---
+
 ## What We Have (Foundation ✅)
 
 1. **OSC Communication Layer** - Proven bidirectional connection to Ableton
 2. **Music Theory Engine** - Scales, chords, progressions, melody generation
-3. **Core Functions** - 12 working commands that control Ableton
+3. **Core Functions** - 12 working commands that control Ableton (the tools!)
 4. **Working CLI** - `python3 ableton.py <command>` interface
 
 ## What's Missing for True Agent 🔧
