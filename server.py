@@ -579,6 +579,56 @@ async def add_hihats(
     num_notes = int(total_beats * 4)
     return f"Added {num_notes} hi-hat notes (MIDI {midi_note}) to track {track_id}, clip {scene_id}"
 
+@app.tool()
+async def add_notes(
+    track_id: int,
+    scene_id: int,
+    notes: list,
+    clip_length: float = 4.0
+) -> str:
+    """
+    Add specific MIDI notes to a clip
+
+    This is the most flexible tool for creating precise melodies and compositions.
+    Each note is specified with exact timing, pitch, duration, and velocity.
+
+    Args:
+        track_id: Track index (0-based)
+        scene_id: Scene/clip slot index (0-based)
+        notes: List of note dictionaries, each containing:
+            - pitch: MIDI note number (0-127, e.g., 60 = middle C)
+            - start: Start time in beats (e.g., 0.0, 1.5, 2.0)
+            - duration: Note length in beats (e.g., 0.25 = 16th, 0.5 = 8th, 1.0 = quarter)
+            - velocity: Note velocity/volume (0-127, default 90)
+        clip_length: Length of clip in bars (default 4.0)
+
+    Example:
+        notes = [
+            {"pitch": 60, "start": 0.0, "duration": 1.0, "velocity": 90},  # Middle C
+            {"pitch": 64, "start": 1.0, "duration": 1.0, "velocity": 90},  # E
+            {"pitch": 67, "start": 2.0, "duration": 2.0, "velocity": 90}   # G
+        ]
+    """
+    # Check if clip exists, create if needed
+    osc_client.send_message("/live/clip_slot/create_clip", [track_id, scene_id, clip_length])
+    time.sleep(0.3)
+
+    # Convert notes to OSC format: [pitch, start, duration, velocity, muted]
+    midi_notes = []
+    for note in notes:
+        pitch = note.get("pitch", 60)
+        start = note.get("start", 0.0)
+        duration = note.get("duration", 1.0)
+        velocity = note.get("velocity", 90)
+        muted = False
+
+        midi_notes.extend([pitch, start, duration, velocity, muted])
+
+    # Send to Ableton
+    osc_client.send_message("/live/clip/add/notes", [track_id, scene_id] + midi_notes)
+
+    return f"Added {len(notes)} notes to track {track_id}, clip {scene_id}"
+
 async def main():
     """Run the MCP server"""
     await app.run_stdio_async()
