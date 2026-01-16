@@ -172,6 +172,219 @@ async def clean_empty_tracks() -> str:
 
     return f"Deleted {len(tracks_to_delete)} empty tracks"
 
+@app.tool()
+async def set_track_name(track_id: int, name: str) -> str:
+    """
+    Rename a track
+
+    Args:
+        track_id: Track index to rename
+        name: New track name
+    """
+    osc_client.send_message("/live/track/set/name", [track_id, name])
+    return f"Renamed track {track_id} to '{name}'"
+
+@app.tool()
+async def set_track_color(track_id: int, color_index: int) -> str:
+    """
+    Set track color from Ableton's color palette
+
+    Args:
+        track_id: Track index
+        color_index: Color palette index (0-69)
+    """
+    osc_client.send_message("/live/track/set/color", [track_id, color_index])
+    return f"Set track {track_id} color to {color_index}"
+
+@app.tool()
+async def delete_track(track_id: int) -> str:
+    """
+    Delete a specific track
+
+    Args:
+        track_id: Track index to delete
+    """
+    osc_client.send_message("/live/song/delete_track", [track_id])
+    time.sleep(0.2)
+    return f"Deleted track {track_id}"
+
+# ============================================================================
+# MIXER TOOLS
+# ============================================================================
+
+@app.tool()
+async def set_track_volume(track_id: int, volume: float) -> str:
+    """
+    Set track volume
+
+    Args:
+        track_id: Track index
+        volume: Volume level (0.0 to 1.0)
+    """
+    osc_client.send_message("/live/track/set/volume", [track_id, volume])
+    return f"Set track {track_id} volume to {volume}"
+
+@app.tool()
+async def set_track_pan(track_id: int, pan: float) -> str:
+    """
+    Set track panning
+
+    Args:
+        track_id: Track index
+        pan: Pan position (-1.0 left to 1.0 right, 0.0 center)
+    """
+    osc_client.send_message("/live/track/set/panning", [track_id, pan])
+    return f"Set track {track_id} pan to {pan}"
+
+@app.tool()
+async def set_track_mute(track_id: int, mute: bool) -> str:
+    """
+    Mute or unmute a track
+
+    Args:
+        track_id: Track index
+        mute: True to mute, False to unmute
+    """
+    mute_value = 1 if mute else 0
+    osc_client.send_message("/live/track/set/mute", [track_id, mute_value])
+    state = "muted" if mute else "unmuted"
+    return f"Track {track_id} {state}"
+
+@app.tool()
+async def set_track_solo(track_id: int, solo: bool) -> str:
+    """
+    Solo or unsolo a track
+
+    Args:
+        track_id: Track index
+        solo: True to solo, False to unsolo
+    """
+    solo_value = 1 if solo else 0
+    osc_client.send_message("/live/track/set/solo", [track_id, solo_value])
+    state = "soloed" if solo else "unsoloed"
+    return f"Track {track_id} {state}"
+
+@app.tool()
+async def set_track_arm(track_id: int, arm: bool) -> str:
+    """
+    Arm or disarm a track for recording
+
+    Args:
+        track_id: Track index
+        arm: True to arm, False to disarm
+    """
+    arm_value = 1 if arm else 0
+    osc_client.send_message("/live/track/set/arm", [track_id, arm_value])
+    state = "armed" if arm else "disarmed"
+    return f"Track {track_id} {state}"
+
+# ============================================================================
+# CLIP OPERATION TOOLS
+# ============================================================================
+
+@app.tool()
+async def fire_clip(track_id: int, scene_id: int) -> str:
+    """
+    Trigger/launch a clip
+
+    Args:
+        track_id: Track index
+        scene_id: Scene/clip slot index
+    """
+    osc_client.send_message("/live/clip_slot/fire", [track_id, scene_id])
+    return f"Fired clip at track {track_id}, scene {scene_id}"
+
+@app.tool()
+async def stop_clip(track_id: int) -> str:
+    """
+    Stop a playing clip on a track
+
+    Args:
+        track_id: Track index
+    """
+    osc_client.send_message("/live/track/stop_all_clips", [track_id])
+    return f"Stopped clips on track {track_id}"
+
+@app.tool()
+async def delete_clip(track_id: int, scene_id: int) -> str:
+    """
+    Delete a clip from a clip slot
+
+    Args:
+        track_id: Track index
+        scene_id: Scene/clip slot index
+    """
+    osc_client.send_message("/live/clip_slot/delete_clip", [track_id, scene_id])
+    return f"Deleted clip at track {track_id}, scene {scene_id}"
+
+@app.tool()
+async def set_clip_name(track_id: int, scene_id: int, name: str) -> str:
+    """
+    Rename a clip
+
+    Args:
+        track_id: Track index
+        scene_id: Scene/clip slot index
+        name: New clip name
+    """
+    osc_client.send_message("/live/clip/set/name", [track_id, scene_id, name])
+    return f"Renamed clip at track {track_id}, scene {scene_id} to '{name}'"
+
+@app.tool()
+async def set_clip_loop(track_id: int, scene_id: int, start: float, end: float) -> str:
+    """
+    Set clip loop boundaries
+
+    Args:
+        track_id: Track index
+        scene_id: Scene/clip slot index
+        start: Loop start position in beats
+        end: Loop end position in beats
+    """
+    osc_client.send_message("/live/clip/set/loop_start", [track_id, scene_id, start])
+    osc_client.send_message("/live/clip/set/loop_end", [track_id, scene_id, end])
+    return f"Set loop for clip at track {track_id}, scene {scene_id} from {start} to {end} beats"
+
+# ============================================================================
+# SCENE MANAGEMENT TOOLS
+# ============================================================================
+
+@app.tool()
+async def create_scene(index: int = -1) -> str:
+    """
+    Create a new scene
+
+    Args:
+        index: Position to insert scene (-1 for end)
+    """
+    osc_client.send_message("/live/song/create_scene", [index])
+    time.sleep(0.2)
+    position = "at end" if index == -1 else f"at position {index}"
+    return f"Created scene {position}"
+
+@app.tool()
+async def delete_scene(scene_id: int) -> str:
+    """
+    Delete a scene
+
+    Args:
+        scene_id: Scene index to delete
+    """
+    osc_client.send_message("/live/song/delete_scene", [scene_id])
+    time.sleep(0.2)
+    return f"Deleted scene {scene_id}"
+
+@app.tool()
+async def fire_scene(scene_id: int) -> str:
+    """
+    Launch a scene (trigger all clips in the scene)
+
+    Args:
+        scene_id: Scene index to fire
+    """
+    osc_client.send_message("/live/song/start_listen/scenes", [scene_id])
+    return f"Fired scene {scene_id}"
+
 # ============================================================================
 # MUSIC GENERATION TOOLS
 # ============================================================================
